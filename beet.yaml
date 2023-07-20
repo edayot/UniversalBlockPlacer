@@ -1,0 +1,43 @@
+id: template
+name: Template
+version: "0.0.0"
+description: template
+author: author
+
+meta:
+  mc_supports: ["1.20","1.20.1"]
+  mc_supports_dataversion: [3463,3465]
+  smithed_dependencies:
+    - id: "smithed:crafter"
+      version_: "0.2.0"
+      versioning:
+        type: "normal"
+        prefix: "#smithed.crafter"
+
+    - id: "smithed:custom-block"
+      version_: "0.2.0"
+      versioning:
+        type: "normal"
+        prefix: "#smithed.custom_block"
+
+    - id: "smithed:actionbar"
+      version_: "0.4.1"
+      versioning:
+        type: "normal"
+        prefix: "#smithed.actionbar"
+
+    - id: "airdox_:itemio"
+      version_: "0.5.4"
+      versioning:
+        type: "normal"
+        prefix: "#itemio"
+        
+-pipeline:
+  - airdox_.test_load_generator
+
+data_pack:
+  load: [.]
+resource_pack:
+  load: [.]
+
+extend: ["common.yaml"]
