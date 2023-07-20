@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "datapacktemplate"
+name = "universalblockplacer"
 version = "0.0.0"
-description = "A datapack template"
+description = "A universal block placer for Minecraft in datapack"
 authors = ["edayot <pro.e.dayot@gmail.com>"]
 license = "MIT"
 readme = "README.md"
