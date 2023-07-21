@@ -84,6 +84,9 @@ def generate_item_to_block(ctx: Context):
         f"function universalblockplacer:v{ctx.project_version}/item_to_id"
     )
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"].append(
+        f"scoreboard players set @s universalblockplacer.block_choice -1"
+    )
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"].append(
         f"function universalblockplacer:v{ctx.project_version}/block_from_ids"
     )
 
@@ -97,21 +100,26 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
     if node.root:
         ctx.generate(Function([f"function {node.parent}"]))
     if node.partition(n):
-        function.lines.append(
-            f"execute if score @s universalblockplacer.block_choice matches {node.range} run function {node.children}"
-        )
+        if node.range.startswith("0"):
+            function.lines.append(
+                f"execute if score @s universalblockplacer.block_choice matches {node.range[1:]} run function {node.children}"
+            )
+        else:
+            function.lines.append(
+                f"execute if score @s universalblockplacer.block_choice matches {node.range} run function {node.children}"
+            )
     else:
         #print(node)
         a=','.join([f'{key}={value}' for key,value in node.value.items()])
         function.lines.append(
-            f"execute if score @s universalblockplacer.block_choice matches {node.range} run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
+            f"execute if score @s universalblockplacer.block_choice matches {node.range} anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
         )
         if node.range=="0":
             a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates])
             function.lines.append(
-                f"execute if score @s universalblockplacer.block_choice matches -1 run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
-            
+                f"execute if score @s universalblockplacer.block_choice matches -1 anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
             )
+            
 
     
     
@@ -120,9 +128,14 @@ def handle_content(ctx: Context, node: TreeNode[str], function: Function, n: int
     if node.root:
         ctx.generate(Function([f"function {node.parent}"]))
     if node.partition(n):
-        function.lines.append(
-            f"execute if score @s universalblockplacer.bit_id matches {node.range} run function {node.children}"
-        )
+        if node.range.startswith("0"):
+            function.lines.append(
+                f"execute if score @s universalblockplacer.bit_id matches {node.range[1:]} run function {node.children}"
+            )
+        else:
+            function.lines.append(
+                f"execute if score @s universalblockplacer.bit_id matches {node.range} run function {node.children}"
+            )
     else:
         function.lines.append(
             f"execute if score @s universalblockplacer.bit_id matches {node.range} run function universalblockplacer:v{ctx.project_version}/tree/blocks/{node.value}"
