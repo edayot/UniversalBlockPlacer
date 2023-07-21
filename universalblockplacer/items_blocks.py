@@ -51,6 +51,8 @@ for b in blocks:
                     b.blockstates[i].id:combinaison[i] for i in range(len(combinaison))
                 }
             )
+    else:
+        b.add_blockstate_combinaison({})
 
 
 different_block_ids=[]

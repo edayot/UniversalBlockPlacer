@@ -61,21 +61,50 @@ def generate_item_to_id(ctx: Context):
 def generate_block_from_ids(ctx: Context):
     # list of items[i].minecraft_id
     items_ids = [item.minecraft_id for item in items[:16]]
-    for node, function in ctx.generate.function_tree(items_ids, name="something"):
+    for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/items/block_from_ids",items_ids, name="something"):
         handle_content(ctx, node, function, 2)
+    del ctx.data.functions[f"universalblockplacer:generated_0"]
+    # create a tree for the blocks
+    i=1
+    for block in blocks:
+        for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/blocks/{block.minecraft_id}",block.blockstates_combinaisons, name="something"):
+            handle_content2(ctx, node, function, 2, block.minecraft_id)
+        del ctx.data.functions[f"universalblockplacer:generated_{i}"]
+        i+=1
+
+
+
+
     
 
-    pass
+            
+        
+        
+def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: int, block: str):
+    if node.root:
+        ctx.generate(Function([f"function {node.parent}"]))
+    if node.partition(n):
+        function.lines.append(
+            f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run function {node.children}"
+        )
+    else:
+        #print(node)
+        a=','.join([f'{key}={value}' for key,value in node.value.items()])
+        function.lines.append(
+            f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ^ ^ ^2 {block}[{a}]"
+        )    
 
+    
+    
 
 def handle_content(ctx: Context, node: TreeNode[str], function: Function, n: int):
     if node.root:
-        ctx.generate(Function([f"function {node.parent}"], tags=["minecraft:tick"]))
+        ctx.generate(Function([f"function {node.parent}"]))
     if node.partition(n):
         function.lines.append(
             f"execute if score @s universalblockplacer.bit_id matches {node.range} run function {node.children}"
         )
     else:
         function.lines.append(
-            f"execute if score @s universalblockplacer.bit_id matches {node.range} run setblock ^ ^ ^2 {node.value}"
+            f"execute if score @s universalblockplacer.bit_id matches {node.range} run function universalblockplacer:v{ctx.project_version}/tree/blocks/{node.value}"
         )
