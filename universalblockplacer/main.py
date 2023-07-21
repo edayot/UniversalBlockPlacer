@@ -3,6 +3,7 @@
 
 
 from .items_blocks import items, blocks
+from .classes import Block
 from beet import Context, DataPack, ResourcePack, ItemTag, BlockTag, Function, FunctionTag, Predicate, TreeNode
 
 
@@ -60,15 +61,15 @@ def generate_item_to_id(ctx: Context):
 
 def generate_block_from_ids(ctx: Context):
     # list of items[i].minecraft_id
-    items_ids = [item.minecraft_id for item in items[:16]]
-    for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/items/block_from_ids",items_ids, name="something"):
+    items_ids = [item.minecraft_id for item in items]
+    for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/items/block_from_ids",items_ids):
         handle_content(ctx, node, function, 2)
     del ctx.data.functions[f"universalblockplacer:generated_0"]
     # create a tree for the blocks
     i=1
     for block in blocks:
-        for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/blocks/{block.minecraft_id}",block.blockstates_combinaisons, name="something"):
-            handle_content2(ctx, node, function, 2, block.minecraft_id)
+        for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/blocks/{block.minecraft_id}",block.blockstates_combinaisons):
+            handle_content2(ctx, node, function, 2, block)
         del ctx.data.functions[f"universalblockplacer:generated_{i}"]
         i+=1
 
@@ -88,24 +89,29 @@ def generate_item_to_block(ctx: Context):
 
 
 
-    
 
             
         
         
-def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: int, block: str):
+def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: int, block: Block):
     if node.root:
         ctx.generate(Function([f"function {node.parent}"]))
     if node.partition(n):
         function.lines.append(
-            f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run function {node.children}"
+            f"execute if score @s universalblockplacer.block_choice matches {node.range} run function {node.children}"
         )
     else:
         #print(node)
         a=','.join([f'{key}={value}' for key,value in node.value.items()])
         function.lines.append(
-            f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ^ ^ ^2 {block}[{a}]"
-        )    
+            f"execute if score @s universalblockplacer.block_choice matches {node.range} run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
+        )
+        if node.range=="0":
+            a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates])
+            function.lines.append(
+                f"execute if score @s universalblockplacer.block_choice matches -1 run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
+            
+            )
 
     
     
