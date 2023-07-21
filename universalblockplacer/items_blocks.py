@@ -1,5 +1,5 @@
 
-from classes import Item, Block, Blockstate
+from .classes import Item, Block, Blockstate
 import requests, json
 from itertools import product
 

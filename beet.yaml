@@ -32,8 +32,13 @@ meta:
         type: "normal"
         prefix: "#itemio"
         
--pipeline:
+pipeline:
   - airdox_.test_load_generator
+  - universalblockplacer.main.generate_item_to_id
+  - universalblockplacer.main.generate_block_from_ids
+
+
+  
 
 data_pack:
   load: [.]
