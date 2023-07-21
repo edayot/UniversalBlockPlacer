@@ -72,6 +72,19 @@ def generate_block_from_ids(ctx: Context):
         del ctx.data.functions[f"universalblockplacer:generated_{i}"]
         i+=1
 
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"] = Function()
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"].append(
+        f"function universalblockplacer:v{ctx.project_version}/tree/items/block_from_ids"
+    )
+
+def generate_item_to_block(ctx: Context):
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"] = Function()
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"].append(
+        f"function universalblockplacer:v{ctx.project_version}/item_to_id"
+    )
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"].append(
+        f"function universalblockplacer:v{ctx.project_version}/block_from_ids"
+    )
 
 
 
