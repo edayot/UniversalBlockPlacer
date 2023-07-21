@@ -31,17 +31,46 @@ def generate_combinaisons(block: Block):
         L.append(blockstate.possible_values)
     return list(product(*L))
 
+encoded_blockstates=[
+    # for internal use
+    "part",
+    "half",
+    "waterlogged",
+
+    # for technical use (maybe not implemented)
+    "delay",
+    "mode",
+    "inverted",
+    # for technical use multiple block at once
+    "flower_amount",
+    "candles",
+    "pickles",
+    "layers",
+    "eggs",
+
+    # facing & other
+    "face",
+    "facing",
+    "hinge",
+    "rotation",
+    "axis",
+    "type",
+    "attachment",
+    "orientation",
+    "hanging",        
+]
 
 for b in blocks:
     if b.minecraft_id in blockstates:
         for blockstate in blockstates[b.minecraft_id][1]:
-            b.add_blockstate(
-                Blockstate(
-                    id=blockstate,
-                    possible_values=blockstates[b.minecraft_id][0][blockstate],
-                    default_value=blockstates[b.minecraft_id][1][blockstate]
+            if blockstate in encoded_blockstates:
+                b.add_blockstate(
+                    Blockstate(
+                        id=blockstate,
+                        possible_values=blockstates[b.minecraft_id][0][blockstate],
+                        default_value=blockstates[b.minecraft_id][1][blockstate]
+                    )
                 )
-            )
 
 for b in blocks:
     if b.has_blockstates():

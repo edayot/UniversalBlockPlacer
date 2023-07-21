@@ -16,7 +16,7 @@ def generate_item_to_id(ctx: Context):
 
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_id"] = Function()
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_id"].append(
-        f"scoreboard players reset @s universalblockplacer.bit_id"
+        f"scoreboard players reset @s universalblockplacer.item_bit_id"
     )
     
     # generate the item tags
@@ -39,7 +39,7 @@ def generate_item_to_id(ctx: Context):
             }
         )
         ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_id"].append(
-            f"execute if predicate universalblockplacer:v{ctx.project_version}/bit_id/{i} run scoreboard players add @s universalblockplacer.bit_id {2**i}"
+            f"execute if predicate universalblockplacer:v{ctx.project_version}/bit_id/{i} run scoreboard players add @s universalblockplacer.item_bit_id {2**i}"
         )
     ctx.data.predicates[f"universalblockplacer:v{ctx.project_version}/bit_id/bonus"]=Predicate({
                 "condition": "minecraft:entity_properties",
@@ -54,7 +54,7 @@ def generate_item_to_id(ctx: Context):
             }
         )
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_id"].append(
-        f"execute if predicate universalblockplacer:v{ctx.project_version}/bit_id/bonus run scoreboard players add @s universalblockplacer.bit_id 0"
+        f"execute if predicate universalblockplacer:v{ctx.project_version}/bit_id/bonus run scoreboard players add @s universalblockplacer.item_bit_id 0"
     )
 
 
@@ -65,6 +65,18 @@ def generate_block_from_ids(ctx: Context):
     for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/items/block_from_ids",items_ids):
         handle_content(ctx, node, function, 2)
     del ctx.data.functions[f"universalblockplacer:generated_0"]
+    # Create a function for each item
+
+    for item in items:
+        ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/tree/items/block_list/{item.minecraft_id}"] = Function()
+        for i,block in enumerate(item.block_list):
+            ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/tree/items/block_list/{item.minecraft_id}"].append(
+                f"execute if score @s universalblockplacer.block_choice matches {i} run function universalblockplacer:v{ctx.project_version}/tree/blocks/{block.minecraft_id}"
+            )
+
+
+
+
     # create a tree for the blocks
     i=1
     for block in blocks:
@@ -84,7 +96,10 @@ def generate_item_to_block(ctx: Context):
         f"function universalblockplacer:v{ctx.project_version}/item_to_id"
     )
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"].append(
-        f"scoreboard players set @s universalblockplacer.block_choice -1"
+        f"scoreboard players set @s universalblockplacer.block_bit_id -1"
+    )
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"].append(
+        f"scoreboard players set @s universalblockplacer.block_choice 0"
     )
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/item_to_block"].append(
         f"function universalblockplacer:v{ctx.project_version}/block_from_ids"
@@ -102,24 +117,23 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
     if node.partition(n):
         if node.range.startswith("0"):
             function.lines.append(
-                f"execute if score @s universalblockplacer.block_choice matches {node.range[1:]} run function {node.children}"
+                f"execute if score @s universalblockplacer.block_bit_id matches {node.range[1:]} run function {node.children}"
             )
         else:
             function.lines.append(
-                f"execute if score @s universalblockplacer.block_choice matches {node.range} run function {node.children}"
+                f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run function {node.children}"
             )
     else:
         #print(node)
         a=','.join([f'{key}={value}' for key,value in node.value.items()])
         function.lines.append(
-            f"execute if score @s universalblockplacer.block_choice matches {node.range} anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
+            f"execute if score @s universalblockplacer.block_bit_id matches {node.range} anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
         )
-        if node.range=="0":
+        if node.range=="1":
             a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates])
             function.lines.append(
-                f"execute if score @s universalblockplacer.block_choice matches -1 anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
+                f"execute if score @s universalblockplacer.block_bit_id matches -1 anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
             )
-            
 
     
     
@@ -130,13 +144,13 @@ def handle_content(ctx: Context, node: TreeNode[str], function: Function, n: int
     if node.partition(n):
         if node.range.startswith("0"):
             function.lines.append(
-                f"execute if score @s universalblockplacer.bit_id matches {node.range[1:]} run function {node.children}"
+                f"execute if score @s universalblockplacer.item_bit_id matches {node.range[1:]} run function {node.children}"
             )
         else:
             function.lines.append(
-                f"execute if score @s universalblockplacer.bit_id matches {node.range} run function {node.children}"
+                f"execute if score @s universalblockplacer.item_bit_id matches {node.range} run function {node.children}"
             )
     else:
         function.lines.append(
-            f"execute if score @s universalblockplacer.bit_id matches {node.range} run function universalblockplacer:v{ctx.project_version}/tree/blocks/{node.value}"
+            f"execute if score @s universalblockplacer.item_bit_id matches {node.range} run function universalblockplacer:v{ctx.project_version}/tree/items/block_list/{node.value}"
         )
