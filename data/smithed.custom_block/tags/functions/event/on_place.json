@@ -1,5 +1,8 @@
 {
     "values":[
-        "#universalblockplacer:smithed.custom_block/on_place"
+        {
+            "id":"#universalblockplacer:smithed.custom_block/on_place",
+            "required": false
+        }
     ]
 }

@@ -1,0 +1,1 @@
+tellraw @s [{"text": "[Loaded UniversalBlockPlacer __version__]", "color": "green"}]

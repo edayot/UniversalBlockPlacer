@@ -1,3 +1,5 @@
 {
-	"values": []
+	"values": [
+		"universalblockplacer:impl/calls/libs/smithed.custom_block/on_place"
+	]
 }
