@@ -2,7 +2,7 @@
 
 
 
-from .items_blocks import items, blocks, not_in_combinaison, encoded_blockstates, doors
+from .items_blocks import items, blocks, not_in_combinaison, encoded_blockstates, doors, replaceable
 from .classes import Block
 from beet import Context, DataPack, ResourcePack, ItemTag, BlockTag, Function, FunctionTag, Predicate, TreeNode
 
@@ -144,7 +144,7 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
                 function.lines.append(
                     f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
                 )
-        if block.minecraft_id in doors:
+        elif block.minecraft_id in doors+replaceable and "half" in [blockstate.id for blockstate in block.blockstates]:
             # check if the half is top or bottom
             if node.value["half"] == "lower":
                 a=','.join([f'{key}={value}' for key,value in node.value.items() if key!="half"]+["half=lower"])

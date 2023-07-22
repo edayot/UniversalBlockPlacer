@@ -11,7 +11,7 @@ blocklist_url="https://github.com/misode/mcmeta/blob/{mc_version}-registries/blo
 blockstates_url="https://github.com/misode/mcmeta/blob/{mc_version}-summary/blocks/data.json?raw=true".format(mc_version=MC_VERSION)
 doors="https://github.com/misode/mcmeta/blob/{mc_version}-data-json/data/minecraft/tags/blocks/doors.json?raw=true".format(mc_version=MC_VERSION)
 wooden_doors="https://github.com/misode/mcmeta/blob/{mc_version}-data-json/data/minecraft/tags/blocks/wooden_doors.json?raw=true".format(mc_version=MC_VERSION)
-
+replaceable="https://github.com/misode/mcmeta/blob/{mc_version}-data-json/data/minecraft/tags/blocks/replaceable.json?raw=true".format(mc_version=MC_VERSION)
 
 blockstates=requests.get(blockstates_url).json()
 itemlist=requests.get(itemlist_url).json()
@@ -19,10 +19,13 @@ blocklist=requests.get(blocklist_url).json()
 
 doors=requests.get(doors).json()
 wooden_doors=requests.get(wooden_doors).json()
+replaceable=requests.get(replaceable).json()
 
 doors["values"]+=wooden_doors["values"]
 #eliminate minecraft: prefix
 doors=[door.replace("minecraft:","") for door in doors["values"]]
+
+replaceable=[replace.replace("minecraft:","") for replace in replaceable["values"]]
 
 items=[]
 for item in itemlist:    
