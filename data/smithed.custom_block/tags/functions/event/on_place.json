@@ -1,5 +1,5 @@
 {
     "values":[
-        "#universalblockplacer:on_place"
+        "#universalblockplacer:smithed.custom_block/on_place"
     ]
 }
