@@ -63,7 +63,7 @@ def generate_block_from_ids(ctx: Context):
     # list of items[i].minecraft_id
     items_ids = [item.minecraft_id for item in items]
     for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/items/block_from_ids",items_ids):
-        handle_content(ctx, node, function, 2)
+        generate_items_function(ctx, node, function, 2)
     del ctx.data.functions[f"universalblockplacer:generated_0"]
     # Create a function for each item
 
@@ -81,7 +81,7 @@ def generate_block_from_ids(ctx: Context):
     i=1
     for block in blocks:
         for node, function in ctx.generate.function_tree(f"v{ctx.project_version}/tree/blocks/{block.minecraft_id}",block.blockstates_combinaisons):
-            handle_content2(ctx, node, function, 2, block)
+            generate_block_function(ctx, node, function, 2, block)
         del ctx.data.functions[f"universalblockplacer:generated_{i}"]
         i+=1
 
@@ -90,7 +90,7 @@ def generate_block_from_ids(ctx: Context):
         f"scoreboard players set #water universalblockplacer.math 0"
     )
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"].append(
-        f"execute if block ~ ~ ~ water run scoreboard players set #block universalblockplacer.math 1"
+        f"execute if block ~ ~ ~ water run scoreboard players set #water universalblockplacer.math 1"
     )
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"].append(
         f"function universalblockplacer:v{ctx.project_version}/tree/items/block_from_ids"
@@ -117,7 +117,7 @@ def generate_item_to_block(ctx: Context):
             
         
         
-def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: int, block: Block):
+def generate_block_function(ctx: Context, node: TreeNode[str], function: Function, n: int, block: Block):
     if node.root:
         ctx.generate(Function([f"function {node.parent}"]))
     if node.partition(n):
@@ -139,10 +139,14 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
             function.lines.append(
                 f"execute if score @s universalblockplacer.block_bit_id matches {node.range} if score #water universalblockplacer.math matches 1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
             )
-            if node.range=="1":
-                a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison])
+            if node.range=="0":
+                a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison]+["waterlogged=false"])
                 function.lines.append(
-                    f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+                    f"execute if score @s universalblockplacer.block_bit_id matches -1 if score #water universalblockplacer.math matches 0 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+                )
+                a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison]+["waterlogged=true"])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches -1 if score #water universalblockplacer.math matches 1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
                 )
         elif block.minecraft_id in doors+replaceable and "half" in [blockstate.id for blockstate in block.blockstates]:
             # check if the half is top or bottom
@@ -166,7 +170,7 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
                 function.lines.append(
                     f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ~ ~-1 ~ {block.minecraft_id}[{a}]"
                 )
-            if node.range=="1":
+            if node.range=="0":
                 a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison and blockstate.id!="half"]+["half=lower"])
                 function.lines.append(
                     f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
@@ -181,7 +185,7 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
             function.lines.append(
                 f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
             )
-            if node.range=="1":
+            if node.range=="0":
                 a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison])
                 function.lines.append(
                     f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
@@ -190,7 +194,7 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
     
     
 
-def handle_content(ctx: Context, node: TreeNode[str], function: Function, n: int):
+def generate_items_function(ctx: Context, node: TreeNode[str], function: Function, n: int):
     if node.root:
         ctx.generate(Function([f"function {node.parent}"]))
     if node.partition(n):
