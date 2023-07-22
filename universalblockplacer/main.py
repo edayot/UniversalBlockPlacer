@@ -2,7 +2,7 @@
 
 
 
-from .items_blocks import items, blocks, not_in_combinaison, encoded_blockstates
+from .items_blocks import items, blocks, not_in_combinaison, encoded_blockstates, doors
 from .classes import Block
 from beet import Context, DataPack, ResourcePack, ItemTag, BlockTag, Function, FunctionTag, Predicate, TreeNode
 
@@ -139,6 +139,43 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
             function.lines.append(
                 f"execute if score @s universalblockplacer.block_bit_id matches {node.range} if score #water universalblockplacer.math matches 1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
             )
+            if node.range=="1":
+                a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+                )
+        if block.minecraft_id in doors:
+            # check if the half is top or bottom
+            if node.value["half"] == "lower":
+                a=','.join([f'{key}={value}' for key,value in node.value.items() if key!="half"]+["half=lower"])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+                )
+                a=','.join([f'{key}={value}' for key,value in node.value.items() if key!="half"]+["half=upper"])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ~ ~1 ~ {block.minecraft_id}[{a}]"
+                )
+                #print(function.lines)
+
+            if node.value["half"]=="upper":
+                a=','.join([f'{key}={value}' for key,value in node.value.items() if key!="half"]+["half=upper"])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+                )
+                a=','.join([f'{key}={value}' for key,value in node.value.items() if key!="half"]+["half=lower"])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ~ ~-1 ~ {block.minecraft_id}[{a}]"
+                )
+            if node.range=="1":
+                a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison and blockstate.id!="half"]+["half=lower"])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+                )
+                a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison and blockstate.id!="half"]+["half=upper"])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~1 ~ {block.minecraft_id}[{a}]"
+                )
+
         else:
             a=','.join([f'{key}={value}' for key,value in node.value.items()])
             function.lines.append(

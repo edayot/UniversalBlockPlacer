@@ -9,10 +9,20 @@ MC_VERSION="1.20.1"
 itemlist_url="https://github.com/misode/mcmeta/blob/{mc_version}-registries/item/data.json?raw=true".format(mc_version=MC_VERSION)
 blocklist_url="https://github.com/misode/mcmeta/blob/{mc_version}-registries/block/data.json?raw=true".format(mc_version=MC_VERSION)
 blockstates_url="https://github.com/misode/mcmeta/blob/{mc_version}-summary/blocks/data.json?raw=true".format(mc_version=MC_VERSION)
+doors="https://github.com/misode/mcmeta/blob/{mc_version}-data-json/data/minecraft/tags/blocks/doors.json?raw=true".format(mc_version=MC_VERSION)
+wooden_doors="https://github.com/misode/mcmeta/blob/{mc_version}-data-json/data/minecraft/tags/blocks/wooden_doors.json?raw=true".format(mc_version=MC_VERSION)
+
 
 blockstates=requests.get(blockstates_url).json()
 itemlist=requests.get(itemlist_url).json()
 blocklist=requests.get(blocklist_url).json()
+
+doors=requests.get(doors).json()
+wooden_doors=requests.get(wooden_doors).json()
+
+doors["values"]+=wooden_doors["values"]
+#eliminate minecraft: prefix
+doors=[door.replace("minecraft:","") for door in doors["values"]]
 
 items=[]
 for item in itemlist:    
@@ -29,7 +39,7 @@ for block in blocklist:
 
 encoded_blockstates=[
     # for internal use
-
+    "half",
     # for technical use (maybe not implemented)
     "delay",
     "mode",
@@ -55,7 +65,6 @@ encoded_blockstates=[
 not_in_combinaison=[
     # All internal use
     "part",
-    "half",
     "waterlogged",
 ]
 
@@ -82,7 +91,7 @@ for b in blocks:
     if b.has_blockstates():
         blockstates_coucou=[blockstate.id for blockstate in b.blockstates if blockstate.id not in not_in_combinaison]
         for combinaison in generate_combinaisons(b):
-            print(combinaison)
+            #print(combinaison)
             b.add_blockstate_combinaison(
                 {
                     blockstates_coucou[i]:combinaison[i] for i in range(len(combinaison))                }
