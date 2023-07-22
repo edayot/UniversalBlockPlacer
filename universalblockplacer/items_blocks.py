@@ -25,17 +25,10 @@ for block in blocklist:
 
 
                 
-def generate_combinaisons(block: Block):
-    L=[]
-    for blockstate in block.blockstates:
-        L.append(blockstate.possible_values)
-    return list(product(*L))
+
 
 encoded_blockstates=[
     # for internal use
-    "part",
-    "half",
-    "waterlogged",
 
     # for technical use (maybe not implemented)
     "delay",
@@ -59,11 +52,17 @@ encoded_blockstates=[
     "orientation",
     "hanging",        
 ]
+not_in_combinaison=[
+    # All internal use
+    "part",
+    "half",
+    "waterlogged",
+]
 
 for b in blocks:
     if b.minecraft_id in blockstates:
         for blockstate in blockstates[b.minecraft_id][1]:
-            if blockstate in encoded_blockstates:
+            if blockstate in encoded_blockstates+not_in_combinaison:
                 b.add_blockstate(
                     Blockstate(
                         id=blockstate,
@@ -72,13 +71,21 @@ for b in blocks:
                     )
                 )
 
+def generate_combinaisons(block: Block):
+    L=[]
+    for blockstate in block.blockstates:
+        if blockstate.id in encoded_blockstates:
+            L.append(blockstate.possible_values)
+    return list(product(*L))
+
 for b in blocks:
     if b.has_blockstates():
+        blockstates_coucou=[blockstate.id for blockstate in b.blockstates if blockstate.id not in not_in_combinaison]
         for combinaison in generate_combinaisons(b):
+            print(combinaison)
             b.add_blockstate_combinaison(
                 {
-                    b.blockstates[i].id:combinaison[i] for i in range(len(combinaison))
-                }
+                    blockstates_coucou[i]:combinaison[i] for i in range(len(combinaison))                }
             )
     else:
         b.add_blockstate_combinaison({})

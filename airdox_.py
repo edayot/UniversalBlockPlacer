@@ -27,7 +27,6 @@ def allow_function_without_name(ctx: Context):
                 
 def load_included(ctx: Context):
     ctx.require(model_merging)
-    print(os.listdir("."))
     for location in ctx.meta["load_included_path"]:
         for path in os.listdir(location):
             data=DataPack(path="./release/included/"+path)

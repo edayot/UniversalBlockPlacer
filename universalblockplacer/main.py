@@ -2,7 +2,7 @@
 
 
 
-from .items_blocks import items, blocks
+from .items_blocks import items, blocks, not_in_combinaison, encoded_blockstates
 from .classes import Block
 from beet import Context, DataPack, ResourcePack, ItemTag, BlockTag, Function, FunctionTag, Predicate, TreeNode
 
@@ -87,6 +87,12 @@ def generate_block_from_ids(ctx: Context):
 
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"] = Function()
     ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"].append(
+        f"scoreboard players set #water universalblockplacer.math 0"
+    )
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"].append(
+        f"execute if block ~ ~ ~ water run scoreboard players set #block universalblockplacer.math 1"
+    )
+    ctx.data.functions[f"universalblockplacer:v{ctx.project_version}/block_from_ids"].append(
         f"function universalblockplacer:v{ctx.project_version}/tree/items/block_from_ids"
     )
 
@@ -124,16 +130,25 @@ def handle_content2(ctx: Context, node: TreeNode[str], function: Function, n: in
                 f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run function {node.children}"
             )
     else:
-        #print(node)
-        a=','.join([f'{key}={value}' for key,value in node.value.items()])
-        function.lines.append(
-            f"execute if score @s universalblockplacer.block_bit_id matches {node.range} anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
-        )
-        if node.range=="1":
-            a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates])
+        if "waterlogged" in [blockstate.id for blockstate in block.blockstates]:
+            a=','.join([f'{key}={value}' for key,value in node.value.items() if key!="waterlogged"]+["waterlogged=false"])
             function.lines.append(
-                f"execute if score @s universalblockplacer.block_bit_id matches -1 anchored eyes run setblock ^ ^ ^2 {block.minecraft_id}[{a}]"
+                f"execute if score @s universalblockplacer.block_bit_id matches {node.range} if score #water universalblockplacer.math matches 0 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
             )
+            a=','.join([f'{key}={value}' for key,value in node.value.items() if key!="waterlogged"]+["waterlogged=true"])
+            function.lines.append(
+                f"execute if score @s universalblockplacer.block_bit_id matches {node.range} if score #water universalblockplacer.math matches 1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+            )
+        else:
+            a=','.join([f'{key}={value}' for key,value in node.value.items()])
+            function.lines.append(
+                f"execute if score @s universalblockplacer.block_bit_id matches {node.range} run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+            )
+            if node.range=="1":
+                a=','.join([f'{blockstate.id}={blockstate.default_value}' for blockstate in block.blockstates if blockstate.id not in not_in_combinaison])
+                function.lines.append(
+                    f"execute if score @s universalblockplacer.block_bit_id matches -1 run setblock ~ ~ ~ {block.minecraft_id}[{a}]"
+                )
 
     
     
